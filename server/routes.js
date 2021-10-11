@@ -19,6 +19,7 @@ const buildState = (defaultState) => {
     currentChannelId: generalChannelId,
     users: [
       { id: 1, username: 'admin', password: 'admin' },
+      { id: 2, username: 'admin2', password: 'admin2' },
     ],
   };
 
@@ -128,13 +129,10 @@ export default (app, defaultState = {}) => {
       return;
     }
 
-    reply
-      .header('Content-Type', 'application/json; charset=utf-8')
-      .send(_.omit(state, 'users'));
+    reply.header('Content-Type', 'application/json; charset=utf-8').send(_.omit(state, 'users'));
   });
 
-  app
-    .get('*', (_req, reply) => {
-      reply.view('index.pug');
-    });
+  app.get('*', (_req, reply) => {
+    reply.view('index.pug');
+  });
 };

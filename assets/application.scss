@@ -1,1 +1,19 @@
 @import '~bootstrap/scss/bootstrap';
+
+.nav-link {
+  color: #fff;
+}
+
+.nav-link:hover {
+  cursor: pointer;
+  color: #eee;
+}
+
+.bi-plus-circle:hover {
+  transform: scale(1.1);
+  cursor: pointer;
+}
+
+.bi-plus-circle:active {
+  color: #fff;
+}
