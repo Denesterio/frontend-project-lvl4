@@ -6,6 +6,7 @@ import LayoutHome from '../components/LayoutHome.jsx';
 import ChannelsBox from '../components/ChannelsBox.jsx';
 import MessagesBox from '../components/MessagesBox.jsx';
 import BasePreloader from '../UI/BasePreloader.jsx';
+import { SocketProvider } from '../hooks/useWebsocket.jsx';
 
 const HomePage = () => {
   const dispatch = useDispatch();
@@ -18,12 +19,14 @@ const HomePage = () => {
   return isLoading
     ? <BasePreloader />
     : (
-      <LayoutHome>
-        {{
-          leftColumn: <ChannelsBox />,
-          rightColumn: <MessagesBox />,
-        }}
-      </LayoutHome>
+      <SocketProvider>
+        <LayoutHome>
+          {{
+            leftColumn: <ChannelsBox />,
+            rightColumn: <MessagesBox />,
+          }}
+        </LayoutHome>
+      </SocketProvider>
     );
 };
 

@@ -24,12 +24,21 @@ const channelsSlice = createSlice({
     changeChannel: (state, action) => {
       state.currentChannelId = action.payload;
     },
+    addChannel: (state, action) => {
+      state.channels.push(action.payload);
+    },
+    removeChannel: (state, action) => {
+      state.channels = state.channels.filter((channel) => channel.id !== action.payload.id);
+    },
+    renameChannel: (state, action) => {
+      const channelRenamed = state.channels.find((channel) => channel.id === action.payload.id);
+      channelRenamed.name = action.payload.name;
+    },
   },
   extraReducers: {
     [fetchChannels.pending]: (state) => {
       state.loading = true;
     },
-    // Add reducers for additional action types here, and handle loading state as needed
     [fetchChannels.fulfilled]: (state, action) => {
       state.channels = action.payload.channels;
       state.messages = action.payload.messages;
@@ -39,5 +48,12 @@ const channelsSlice = createSlice({
   },
 });
 
-export const { addMessage, changeChannel } = channelsSlice.actions;
+// prettier-ignore
+export const {
+  addMessage,
+  changeChannel,
+  addChannel,
+  removeChannel,
+  renameChannel,
+} = channelsSlice.actions;
 export default channelsSlice.reducer;

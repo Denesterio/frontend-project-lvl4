@@ -4,6 +4,9 @@ import cn from 'classnames';
 const BaseInputGroup = ({
   error = '',
   name,
+  idKey = '',
+  value,
+  onChange,
   ...props
 }) => {
   const inputClasses = cn('form-control', {
@@ -11,9 +14,11 @@ const BaseInputGroup = ({
   });
 
   return (
-    <div className="form-group">
+    <div className="form-group" key={idKey}>
       <label htmlFor={name} className="input-label">{name}</label>
       <input
+        value={value}
+        onChange={onChange}
         className={inputClasses}
         name={name}
         {...props}

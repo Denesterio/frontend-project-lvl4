@@ -1,13 +1,10 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import { useDispatch } from 'react-redux';
 import { useFormik } from 'formik';
 import { useAuthContext } from '../hooks/useAuthContext.jsx';
+import { useSocketContext } from '../hooks/useWebsocket.jsx';
 import { addMessage } from '../store/channelsSlice.js';
-import createSocket from '../api/websockets.js';
-// import LSHandler from '../utils/LSHandler.js';
 import BaseSubmitButton from '../UI/BaseSubmitButton.jsx';
-
-const socket = createSocket();
 
 const MessageBoxMessageForm = ({ currentChannelId }) => {
   const dispatch = useDispatch();
@@ -15,13 +12,13 @@ const MessageBoxMessageForm = ({ currentChannelId }) => {
   const username = authContext.getUser();
   const [isProcessing, setIsProcessing] = useState(false);
 
-  useEffect(() => {
-    socket.on('newMessage', (data) => {
-      if ('id' in data) {
-        dispatch(addMessage(data));
-      }
-    });
-  }, []);
+  const [socketOn, socketEmit] = useSocketContext();
+
+  socketOn('newMessage', (data) => {
+    if ('id' in data) {
+      dispatch(addMessage(data));
+    }
+  });
 
   const formik = useFormik({
     initialValues: {
@@ -34,9 +31,11 @@ const MessageBoxMessageForm = ({ currentChannelId }) => {
         channelId: currentChannelId,
         username,
       };
-      socket.emit('newMessage', message, () => {
-        setIsProcessing(false);
-        formik.resetForm();
+      socketEmit('newMessage', message).then((data) => {
+        if (data.status === 'ok') {
+          setIsProcessing(false);
+          formik.resetForm();
+        }
       });
     },
   });
