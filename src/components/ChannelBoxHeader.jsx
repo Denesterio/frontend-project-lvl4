@@ -1,11 +1,12 @@
 import React, { useState } from 'react';
 import { useDispatch } from 'react-redux';
 import cn from 'classnames';
-import { addChannel } from '../store/channelsSlice.js';
+import { addChannel, changeChannel } from '../store/channelsSlice.js';
 import { useSocketContext } from '../hooks/useWebsocket.jsx';
 import BaseModal from './BaseModal.jsx';
 import { addToForm, createForm, getWithSubmitHander } from '../utils/formBuilder.jsx';
 import BaseSubmitButton from '../UI/BaseSubmitButton.jsx';
+import useModal from '../hooks/useModal.js';
 
 const ChannelsBoxHeader = ({ className, children }) => {
   const boxClasses = cn('d-flex', 'justify-content-around', className);
@@ -13,8 +14,7 @@ const ChannelsBoxHeader = ({ className, children }) => {
   const dispatch = useDispatch();
   const [isProcessing, setIsProcessing] = useState(false);
 
-  const [modal, setModal] = useState(false);
-  const toggle = () => setModal(!modal);
+  const [modal, toggle] = useModal();
 
   // в createForm создается форма, передается первым параметром в addToForm,
   // который добавляет к ней инпут и передает первым параметром в getWithSubmitHander,
@@ -26,8 +26,8 @@ const ChannelsBoxHeader = ({ className, children }) => {
     ),
     (values) => {
       setIsProcessing(true);
-      socketEmit('newChannel', values).then((data) => {
-        if (data.status === 'ok') {
+      return socketEmit('newChannel', values).then((response) => {
+        if (response.status === 'ok') {
           setIsProcessing(false);
           toggle();
         }
@@ -35,7 +35,10 @@ const ChannelsBoxHeader = ({ className, children }) => {
     },
   );
 
-  socketOn('newChannel', (data) => dispatch(addChannel(data)));
+  socketOn('newChannel', (data) => {
+    dispatch(addChannel(data));
+    dispatch(changeChannel(data.id));
+  });
 
   return (
     <>

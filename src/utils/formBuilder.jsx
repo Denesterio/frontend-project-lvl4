@@ -35,7 +35,7 @@ const getWithSubmitHander = (formOptions, formikHandler) => {
   const initialValues = inputs.reduce((acc, cur) => ({ ...acc, [cur.name]: '' }), {});
   const formik = useFormik({
     initialValues,
-    onSubmit: formikHandler,
+    onSubmit: (values) => formikHandler(values).then(() => formik.resetForm()),
   });
 
   return (

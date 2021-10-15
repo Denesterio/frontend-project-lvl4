@@ -1,4 +1,4 @@
-import React, { useMemo } from 'react';
+import React, { useMemo, useRef, useEffect } from 'react';
 import { useSelector } from 'react-redux';
 import MessagesBoxChannelInfo from './MessageBoxChannelInfo.jsx';
 import MessageBoxMessageForm from './MessageBoxMessageForm.jsx';
@@ -10,13 +10,19 @@ const MessagesBox = () => {
     (message) => message.channelId === currentChannelId,
   ));
 
+  const scrollRef = useRef(null);
+
+  useEffect(() => {
+    scrollRef.current.scrollTo(0, scrollRef.current.offsetHeight);
+  }, [channelMessages]);
+
   return (
     <div className="d-flex flex-column justify-content-between h-100">
       <MessagesBoxChannelInfo
         currentChannelId={currentChannelId}
         messagesCount={channelMessages.length}
       />
-      <div className="overflow-auto px-4 py-2">
+      <div ref={scrollRef} className="overflow-auto px-4 py-2">
         {
                 channelMessages.length > 0
                   ? channelMessages.map((m) => (

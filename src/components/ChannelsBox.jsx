@@ -1,67 +1,66 @@
-import React, { useMemo, useState } from 'react';
-import { useSelector, useDispatch } from 'react-redux';
-import { Nav } from 'reactstrap';
-import {
-  changeChannel, removeChannel, renameChannel,
-} from '../store/channelsSlice.js';
+import React, { useState, useMemo } from 'react';
+import { useDispatch, useSelector } from 'react-redux';
+import * as yup from 'yup';
+import NavChannels from './NavChannels.jsx';
+import { removeChannel, renameChannel } from '../store/channelsSlice.js';
 import { useSocketContext } from '../hooks/useWebsocket.jsx';
 import ChannelsBoxHeader from './ChannelBoxHeader.jsx';
-import BaseNavItem from '../UI/BaseNavItem.jsx';
-import BaseDropdownNavItem from '../UI/BaseDropdownNavItem.jsx';
-// import BaseModal from './BaseModal.jsx';
-// import BaseSubmitButton from '../UI/BaseSubmitButton.jsx';
-// import BaseInputGroup from '../UI/BaseInputGroup.jsx';
 import ModalConfirmation from './ModalConfirmation.jsx';
 import ModalWithInput from './ModalWithInput.jsx';
 
 const ChannelsBox = () => {
-  const isChannelBasic = (channel) => !channel.removable;
-  const isChannelNew = (channel) => channel.removable;
-
+  // получение каналов и списка имен для валидации
   const channels = useSelector((state) => state.channels.channels);
-  const baseChannels = useMemo(() => channels.filter(isChannelBasic), [channels]);
-  const newChannels = useMemo(() => channels.filter(isChannelNew), [channels]);
-
-  const dispatch = useDispatch();
+  const channelsNames = useMemo(() => channels.map((ch) => ch.name), [channels]);
+  // новое имя канала
   const [newChannelName, setNewChannelName] = useState('');
+  const [processing, setProcessing] = useState(false);
+  const [error, setError] = useState('');
+  const dispatch = useDispatch();
   // modal:
   const [modal, setModal] = useState(false);
   const [modalForm, setModalForm] = useState('');
   const [currentModalChannelId, setCurrentModalChannelId] = useState('');
-  const toggle = () => {
-    setModal(!modal);
-  };
+  const toggle = () => setModal(!modal);
   // sokets:
   const [socketOn, socketEmit] = useSocketContext();
-
   socketOn('removeChannel', (data) => dispatch(removeChannel(data)));
   socketOn('renameChannel', (data) => dispatch(renameChannel(data)));
 
-  const changeCurrentChannel = (id) => () => {
-    dispatch(changeChannel(id));
-  };
+  // валидация
+  const newNameSchema = yup.string().required().notOneOf(channelsNames);
 
+  // delete channel
   const deleteChannel = (id) => () => {
     setModalForm('removeChannel');
     setCurrentModalChannelId(id);
-    dispatch(changeChannel(1));
     toggle();
   };
+  const submitRemoveChannel = () => {
+    setProcessing(true);
+    socketEmit('removeChannel', { id: currentModalChannelId })
+      .then(() => toggle())
+      .finally(() => setProcessing(false));
+  };
 
+  // rename channel
   const rename = (id) => () => {
     setModalForm('renameChannel');
     setCurrentModalChannelId(id);
     toggle();
   };
 
-  const submitRenameChannel = () => {
-    socketEmit('renameChannel', { name: newChannelName, id: currentModalChannelId }).then(() => toggle());
-    toggle();
-  };
-
-  const submitRemoveChannel = () => {
-    socketEmit('removeChannel', { id: currentModalChannelId }).then(() => toggle());
-    toggle();
+  const submitRenameChannel = (e) => {
+    console.dir(channelsNames);
+    e.preventDefault();
+    setProcessing(true);
+    newNameSchema.validate(newChannelName)
+      .then((name) => socketEmit('renameChannel', { name, id: currentModalChannelId }))
+      .then(() => toggle())
+      .catch((err) => {
+        setError(err.errors[0]);
+      })
+      .finally(() => setProcessing(false));
   };
 
   const formAttrs = {
@@ -72,9 +71,11 @@ const ChannelsBox = () => {
   const inputAttrs = {
     type: 'text',
     name: 'name',
+    readOnly: processing,
     placeholder: 'Введите название канала',
     value: newChannelName,
     onChange: (e) => setNewChannelName(e.target.value),
+    error,
   };
 
   return (
@@ -88,6 +89,7 @@ const ChannelsBox = () => {
                isOpen={modal}
                modalTitle="Переименовать канал"
                buttonValue="Переименовать"
+               isButtonDisabled={processing}
                formAttrs={formAttrs}
                inputAttrs={inputAttrs}
              />
@@ -98,25 +100,13 @@ const ChannelsBox = () => {
                isOpen={modal}
                modalTitle="Удалить канал?"
                buttonValue="Удалить"
+               isButtonDisabled={processing}
                confirmHandler={submitRemoveChannel}
              />
            )
         }
       <ChannelsBoxHeader className="mt-5 text-center p-2">Каналы:</ChannelsBoxHeader>
-      <Nav pills vertical className="nav-fill px-2">
-        {baseChannels.map(
-          (ch) => <BaseNavItem item={ch} onClick={changeCurrentChannel} key={ch.id} />,
-        )}
-        {newChannels.map((ch) => (
-          <BaseDropdownNavItem
-            onClick={changeCurrentChannel}
-            item={ch}
-            deleteItem={deleteChannel}
-            renameItem={rename}
-            key={ch.id}
-          />
-        ))}
-      </Nav>
+      <NavChannels channels={channels} deleteItem={deleteChannel} renameItem={rename} />
     </>
   );
 };

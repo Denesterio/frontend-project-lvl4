@@ -17,3 +17,25 @@
 .bi-plus-circle:active {
   color: #fff;
 }
+
+// .nav-item {
+//   z-index: 99989;
+// }
+
+.nav-item-overflow {
+  max-width: 123px;
+  display: block;
+  overflow-x: hidden;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+}
+
+// .nav-item-button:hover {
+//   background: transparent;
+// }
+
+// .nav-item-button:active {
+//   background: transparent;
+//   border: none;
+//   outline: none;
+// }

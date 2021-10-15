@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useRef, useEffect } from 'react';
 import { useDispatch } from 'react-redux';
 import { useFormik } from 'formik';
 import { useAuthContext } from '../hooks/useAuthContext.jsx';
@@ -11,6 +11,7 @@ const MessageBoxMessageForm = ({ currentChannelId }) => {
   const authContext = useAuthContext();
   const username = authContext.getUser();
   const [isProcessing, setIsProcessing] = useState(false);
+  const inputRef = useRef(null);
 
   const [socketOn, socketEmit] = useSocketContext();
 
@@ -18,6 +19,10 @@ const MessageBoxMessageForm = ({ currentChannelId }) => {
     if ('id' in data) {
       dispatch(addMessage(data));
     }
+  });
+
+  useEffect(() => {
+    inputRef.current.focus();
   });
 
   const formik = useFormik({
@@ -50,6 +55,7 @@ const MessageBoxMessageForm = ({ currentChannelId }) => {
           type="text"
           className="form-control col-12 col-md-8 col-lg-9"
           readOnly={isProcessing}
+          ref={inputRef}
         />
         <BaseSubmitButton
           className="btn-info col-12 col-md-3 col-lg-2"
