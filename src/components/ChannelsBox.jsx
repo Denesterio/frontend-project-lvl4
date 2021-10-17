@@ -1,8 +1,9 @@
 import React, { useState, useMemo } from 'react';
-import { useDispatch, useSelector } from 'react-redux';
+import { useSelector } from 'react-redux';
+import { useTranslation } from 'react-i18next';
 import * as yup from 'yup';
+import useModal from '../hooks/useModal.js';
 import NavChannels from './NavChannels.jsx';
-import { removeChannel, renameChannel } from '../store/channelsSlice.js';
 import { useSocketContext } from '../hooks/useWebsocket.jsx';
 import ChannelsBoxHeader from './ChannelBoxHeader.jsx';
 import ModalConfirmation from './ModalConfirmation.jsx';
@@ -16,19 +17,17 @@ const ChannelsBox = () => {
   const [newChannelName, setNewChannelName] = useState('');
   const [processing, setProcessing] = useState(false);
   const [error, setError] = useState('');
-  const dispatch = useDispatch();
   // modal:
-  const [modal, setModal] = useState(false);
+  const [modal, toggle] = useModal();
   const [modalForm, setModalForm] = useState('');
   const [currentModalChannelId, setCurrentModalChannelId] = useState('');
-  const toggle = () => setModal(!modal);
   // sokets:
-  const [socketOn, socketEmit] = useSocketContext();
-  socketOn('removeChannel', (data) => dispatch(removeChannel(data)));
-  socketOn('renameChannel', (data) => dispatch(renameChannel(data)));
+  const socketEmit = useSocketContext();
 
   // валидация
   const newNameSchema = yup.string().required().notOneOf(channelsNames);
+  // переводы
+  const { t } = useTranslation();
 
   // delete channel
   const deleteChannel = (id) => () => {
@@ -51,7 +50,6 @@ const ChannelsBox = () => {
   };
 
   const submitRenameChannel = (e) => {
-    console.dir(channelsNames);
     e.preventDefault();
     setProcessing(true);
     newNameSchema.validate(newChannelName)
@@ -72,10 +70,11 @@ const ChannelsBox = () => {
     type: 'text',
     name: 'name',
     readOnly: processing,
-    placeholder: 'Введите название канала',
+    placeholder: t('channel.insertName'),
     value: newChannelName,
     onChange: (e) => setNewChannelName(e.target.value),
     error,
+    labelText: t('channel.name'),
   };
 
   return (
@@ -87,8 +86,8 @@ const ChannelsBox = () => {
              <ModalWithInput
                toggle={toggle}
                isOpen={modal}
-               modalTitle="Переименовать канал"
-               buttonValue="Переименовать"
+               modalTitle={t(`channel.${modalForm}`)}
+               buttonValue={t('rename')}
                isButtonDisabled={processing}
                formAttrs={formAttrs}
                inputAttrs={inputAttrs}
@@ -98,14 +97,19 @@ const ChannelsBox = () => {
              <ModalConfirmation
                toggle={toggle}
                isOpen={modal}
-               modalTitle="Удалить канал?"
-               buttonValue="Удалить"
+               modalTitle={t(`channel.${modalForm}`)}
+               buttonValue={t('delete')}
                isButtonDisabled={processing}
                confirmHandler={submitRemoveChannel}
              />
            )
         }
-      <ChannelsBoxHeader className="mt-5 text-center p-2">Каналы:</ChannelsBoxHeader>
+      <ChannelsBoxHeader
+        channelsNames={channelsNames}
+        className="mt-5 text-center p-2"
+      >
+        {`${t('channel.pl')}:`}
+      </ChannelsBoxHeader>
       <NavChannels channels={channels} deleteItem={deleteChannel} renameItem={rename} />
     </>
   );

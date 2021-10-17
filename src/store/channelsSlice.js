@@ -1,6 +1,7 @@
 /* eslint-disable no-param-reassign */
 import { createSlice, createAsyncThunk } from '@reduxjs/toolkit';
 import { getChannels } from '../api/get.js';
+import LSHandler from '../utils/LSHandler.js';
 
 // prettier-ignore
 export const fetchChannels = createAsyncThunk(
@@ -46,6 +47,12 @@ const channelsSlice = createSlice({
       state.messages = action.payload.messages;
       state.currentChannelId = action.payload.currentChannelId;
       state.loading = false;
+    },
+    [fetchChannels.rejected]: (state) => {
+      state.loading = false;
+      if (LSHandler.hasToken()) {
+        LSHandler.remove('token');
+      }
     },
   },
 });

@@ -8,13 +8,24 @@ import BaseInputGroup from '../UI/BaseInputGroup.jsx';
 import BaseSubmitButton from '../UI/BaseSubmitButton.jsx';
 import FormAlertBox from '../UI/FormAlertBox.jsx';
 
-const loginSchema = yup.object().shape({
-  username: yup.string().required('Required'),
-  password: yup.string().required('Required'),
+const signupSchema = yup.object().shape({
+  username: yup.string()
+    .min(3, 'Too Short!')
+    .max(20, 'Too Long!')
+    .required('Required'),
+  password: yup.string()
+    .min(6, 'Too Short!')
+    .max(50, 'Too Long!')
+    .required('Required'),
+  confirmPassword: yup.string()
+    .min(6, 'Too Short!')
+    .max(50, 'Too Long!')
+    .required('Required')
+    .when('password', (value, schema) => schema.oneOf([value])),
 });
 
-const LoginForm = () => {
-  const { login } = useAuthContext();
+const Signup = () => {
+  const { signup } = useAuthContext();
   const [serverErrorMsg, setServerErrorMsg] = useState('');
   const history = useHistory();
   const { t } = useTranslation();
@@ -23,10 +34,11 @@ const LoginForm = () => {
     initialValues: {
       username: '',
       password: '',
+      confirmPassword: '',
     },
-    validationSchema: loginSchema,
+    validationSchema: signupSchema,
     onSubmit: (values) => {
-      login(values).then(() => history.push('/')).catch((err) => setServerErrorMsg(err.message));
+      signup(values).then(() => history.push('/')).catch((err) => setServerErrorMsg(err.message));
     },
   });
 
@@ -34,15 +46,15 @@ const LoginForm = () => {
     <div className="row justify-content-center align-items-center h-100">
       <div className="col-md-6">
         <div className="card">
-          <div className="card-header text-center">{ t('login') }</div>
+          <div className="card-header text-center">{ t('signup') }</div>
           <div className="card-body">
             <form id="authForm" onSubmit={formik.handleSubmit} className="mb-3">
               <BaseInputGroup
                 type="text"
                 name="username"
+                labelText={t('username')}
                 onChange={formik.handleChange}
                 value={formik.values.username}
-                labelText={t('username')}
                 error={formik.errors.username}
               />
               <BaseInputGroup
@@ -53,7 +65,15 @@ const LoginForm = () => {
                 value={formik.values.password}
                 error={formik.errors.password}
               />
-              <BaseSubmitButton className="btn-primary" value={t('enter')} />
+              <BaseInputGroup
+                type="password"
+                name="confirmPassword"
+                labelText={t('confirmPassword')}
+                onChange={formik.handleChange}
+                value={formik.values.confirmPassword}
+                error={formik.errors.confirmPassword}
+              />
+              <BaseSubmitButton className="btn-primary" value={t('register')} />
             </form>
             <FormAlertBox message={serverErrorMsg} />
           </div>
@@ -63,4 +83,4 @@ const LoginForm = () => {
   );
 };
 
-export default LoginForm;
+export default Signup;

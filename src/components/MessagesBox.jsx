@@ -1,5 +1,6 @@
 import React, { useMemo, useRef, useEffect } from 'react';
 import { useSelector } from 'react-redux';
+import { useTranslation } from 'react-i18next';
 import MessagesBoxChannelInfo from './MessageBoxChannelInfo.jsx';
 import MessageBoxMessageForm from './MessageBoxMessageForm.jsx';
 
@@ -11,6 +12,7 @@ const MessagesBox = () => {
   ));
 
   const scrollRef = useRef(null);
+  const { t } = useTranslation();
 
   useEffect(() => {
     scrollRef.current.scrollTo(0, scrollRef.current.offsetHeight);
@@ -33,7 +35,7 @@ const MessagesBox = () => {
                       {m.message}
                     </p>
                   ))
-                  : 'Сообщений нет'
+                  : t('messages.no')
               }
       </div>
       <MessageBoxMessageForm currentChannelId={currentChannelId} />

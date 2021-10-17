@@ -1,58 +1,63 @@
 import React, { useState } from 'react';
-import { useDispatch } from 'react-redux';
+import { useTranslation } from 'react-i18next';
 import cn from 'classnames';
-import { addChannel, changeChannel } from '../store/channelsSlice.js';
+import * as yup from 'yup';
 import { useSocketContext } from '../hooks/useWebsocket.jsx';
-import BaseModal from './BaseModal.jsx';
-import { addToForm, createForm, getWithSubmitHander } from '../utils/formBuilder.jsx';
-import BaseSubmitButton from '../UI/BaseSubmitButton.jsx';
 import useModal from '../hooks/useModal.js';
+import ModalWithInput from './ModalWithInput.jsx';
 
-const ChannelsBoxHeader = ({ className, children }) => {
+const ChannelsBoxHeader = ({ className, children, channelsNames }) => {
   const boxClasses = cn('d-flex', 'justify-content-around', className);
-  const [socketOn, socketEmit] = useSocketContext();
-  const dispatch = useDispatch();
-  const [isProcessing, setIsProcessing] = useState(false);
+  const socketEmit = useSocketContext();
+  const { t } = useTranslation();
+
+  // имя нового канала
+  const [newChannelName, setNewChannelName] = useState('');
+  const [processing, setProcessing] = useState(false);
+  const [error, setError] = useState('');
+  const newNameSchema = yup.string().required().notOneOf(channelsNames);
 
   const [modal, toggle] = useModal();
 
-  // в createForm создается форма, передается первым параметром в addToForm,
-  // который добавляет к ней инпут и передает первым параметром в getWithSubmitHander,
-  // последний добавляет обработчик подтверждения
-  const AddForm = getWithSubmitHander(
-    addToForm(
-      createForm({ name: 'addChannel_form' }),
-      { type: 'text', name: 'name', placeholder: 'Введите название канала' },
-    ),
-    (values) => {
-      setIsProcessing(true);
-      return socketEmit('newChannel', values).then((response) => {
-        if (response.status === 'ok') {
-          setIsProcessing(false);
-          toggle();
-        }
-      });
-    },
-  );
+  const submitAddChannel = (e) => {
+    e.preventDefault();
+    setProcessing(true);
+    newNameSchema.validate(newChannelName)
+      .then((name) => socketEmit('newChannel', { name }))
+      .then((response) => {
+        if (response.status === 'ok') toggle();
+      })
+      .catch((err) => setError(err.errors[0]))
+      .finally(() => setProcessing(false));
+  };
 
-  socketOn('newChannel', (data) => {
-    dispatch(addChannel(data));
-    dispatch(changeChannel(data.id));
-  });
+  const formAttrs = {
+    id: 'addChannel_form',
+    onSubmit: submitAddChannel,
+  };
+
+  const inputAttrs = {
+    type: 'text',
+    name: 'name',
+    readOnly: processing,
+    placeholder: t('channel.insertName'),
+    value: newChannelName,
+    onChange: (e) => setNewChannelName(e.target.value),
+    error,
+    labelText: t('channel.name'),
+  };
 
   return (
     <>
-      <BaseModal toggle={toggle} isOpen={modal} modalTitle="Добавить канал">
-        {{
-          body: AddForm,
-          confirmButton: <BaseSubmitButton
-            className="btn-primary"
-            value="Добавить"
-            form="addChannel_form"
-            disabled={isProcessing}
-          />,
-        }}
-      </BaseModal>
+      <ModalWithInput
+        toggle={toggle}
+        isOpen={modal}
+        modalTitle={t('channel.add')}
+        buttonValue={t('add')}
+        isButtonDisabled={processing}
+        formAttrs={formAttrs}
+        inputAttrs={inputAttrs}
+      />
       <div className={boxClasses}>
         <div>{children}</div>
         <div>

@@ -1,25 +1,18 @@
 import React, { useState, useRef, useEffect } from 'react';
-import { useDispatch } from 'react-redux';
+import { useTranslation } from 'react-i18next';
 import { useFormik } from 'formik';
 import { useAuthContext } from '../hooks/useAuthContext.jsx';
 import { useSocketContext } from '../hooks/useWebsocket.jsx';
-import { addMessage } from '../store/channelsSlice.js';
 import BaseSubmitButton from '../UI/BaseSubmitButton.jsx';
 
 const MessageBoxMessageForm = ({ currentChannelId }) => {
-  const dispatch = useDispatch();
   const authContext = useAuthContext();
   const username = authContext.getUser();
   const [isProcessing, setIsProcessing] = useState(false);
   const inputRef = useRef(null);
+  const { t } = useTranslation();
 
-  const [socketOn, socketEmit] = useSocketContext();
-
-  socketOn('newMessage', (data) => {
-    if ('id' in data) {
-      dispatch(addMessage(data));
-    }
-  });
+  const socketEmit = useSocketContext();
 
   useEffect(() => {
     inputRef.current.focus();
@@ -59,7 +52,7 @@ const MessageBoxMessageForm = ({ currentChannelId }) => {
         />
         <BaseSubmitButton
           className="btn-info col-12 col-md-3 col-lg-2"
-          value="Отправить"
+          value={t('send')}
           disabled={isProcessing}
         />
       </form>

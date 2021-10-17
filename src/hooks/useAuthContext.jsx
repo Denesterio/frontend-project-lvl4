@@ -19,7 +19,21 @@ const useAuthProvider = () => {
     return new Promise((resolve) => resolve(response.data.username));
   });
 
-  return { getUser, login };
+  const signup = (params) => axios.post(routes.signup(), params).then((response) => {
+    setUser(response.data.username);
+    lshandler.set('token', response.data.token);
+    lshandler.set('user', response.data.username);
+    return new Promise((resolve) => resolve(response.data.username));
+  });
+
+  const logout = () => {
+    lshandler.remove('token');
+    lshandler.remove('user');
+  };
+
+  return {
+    getUser, login, signup, logout,
+  };
 };
 
 const AuthProvider = ({ children }) => {

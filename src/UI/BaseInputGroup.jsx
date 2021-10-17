@@ -3,7 +3,7 @@ import cn from 'classnames';
 
 // error, name, value, onChange
 const BaseInputGroup = ({
-  error = '', name, value, onChange, focused, ...props
+  error = '', name, labelText, value, onChange, focused, ...props
 }) => {
   const inputRef = useRef(null);
   useEffect(() => {
@@ -16,7 +16,7 @@ const BaseInputGroup = ({
 
   return (
     <div className="form-group">
-      <label htmlFor={name} className="input-label">{name}</label>
+      {labelText && <label htmlFor={name} className="input-label">{labelText}</label>}
       <input
         value={value}
         onChange={onChange}

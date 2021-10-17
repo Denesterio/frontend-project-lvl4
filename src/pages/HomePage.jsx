@@ -1,5 +1,5 @@
-import React, { useEffect, useState } from 'react';
-import { useDispatch } from 'react-redux';
+import React, { useEffect } from 'react';
+import { useDispatch, useSelector } from 'react-redux';
 // import { Link } from 'react-router-dom';
 import { fetchChannels } from '../store/channelsSlice.js';
 import LayoutHome from '../components/LayoutHome.jsx';
@@ -7,25 +7,29 @@ import ChannelsBox from '../components/ChannelsBox.jsx';
 import MessagesBox from '../components/MessagesBox.jsx';
 import BasePreloader from '../UI/BasePreloader.jsx';
 import { SocketProvider } from '../hooks/useWebsocket.jsx';
+import TheHeader from '../components/TheHeader.jsx';
 
 const HomePage = () => {
   const dispatch = useDispatch();
-  const [isLoading, setIsLoading] = useState(true);
+  const loading = useSelector((state) => state.channels.loading);
 
   useEffect(() => {
-    dispatch(fetchChannels()).finally(() => setIsLoading(false));
+    dispatch(fetchChannels());
   }, []);
 
-  return isLoading
+  return loading
     ? <BasePreloader />
     : (
       <SocketProvider>
-        <LayoutHome>
-          {{
-            leftColumn: <ChannelsBox />,
-            rightColumn: <MessagesBox />,
-          }}
-        </LayoutHome>
+        <div className="container d-flex flex-column h-100">
+          <TheHeader />
+          <LayoutHome>
+            {{
+              leftColumn: <ChannelsBox />,
+              rightColumn: <MessagesBox />,
+            }}
+          </LayoutHome>
+        </div>
       </SocketProvider>
     );
 };

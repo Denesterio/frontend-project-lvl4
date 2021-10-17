@@ -8,6 +8,7 @@ import {
 import HomePage from './pages/HomePage.jsx';
 import Page404 from './pages/Page404.jsx';
 import LoginForm from './pages/LoginForm.jsx';
+import Signup from './pages/Signup.jsx';
 import { AuthProvider } from './hooks/useAuthContext.jsx';
 import PrivateRoute from './router/PrivateRoute.jsx';
 
@@ -17,6 +18,9 @@ const App = () => (
       <Switch>
         <Route path="/login">
           <LoginForm />
+        </Route>
+        <Route path="/signup">
+          <Signup />
         </Route>
         <Route path="/404">
           <Page404 />

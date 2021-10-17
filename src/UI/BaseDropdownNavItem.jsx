@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import {
   DropdownItem,
   DropdownToggle,
@@ -17,6 +18,8 @@ const BaseDropdownNavItem = ({
   const [tooltipOpen, setTooltipOpen] = useState(false);
   const toggleTooltip = () => setTooltipOpen(!tooltipOpen);
 
+  const { t } = useTranslation();
+
   const isNameLong = item.name.length > 10;
   const name = isNameLong ? `${item.name.substr(0, 10).trim()}\u2026` : item.name;
 
@@ -31,8 +34,8 @@ const BaseDropdownNavItem = ({
         )}
         <DropdownToggle nav caret />
         <DropdownMenu>
-          <DropdownItem onClick={renameItem(item.id)}>Переименовать</DropdownItem>
-          <DropdownItem onClick={deleteItem(item.id)}>Удалить</DropdownItem>
+          <DropdownItem onClick={renameItem(item.id)}>{t('rename')}</DropdownItem>
+          <DropdownItem onClick={deleteItem(item.id)}>{t('delete')}</DropdownItem>
         </DropdownMenu>
       </ButtonDropdown>
     </ButtonGroup>
