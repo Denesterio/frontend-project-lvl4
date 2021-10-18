@@ -11,17 +11,18 @@ import LoginForm from './pages/LoginForm.jsx';
 import Signup from './pages/Signup.jsx';
 import { AuthProvider } from './hooks/useAuthContext.jsx';
 import PrivateRoute from './router/PrivateRoute.jsx';
+import AuthRoute from './router/AuthRoute.jsx';
 
 const App = () => (
   <AuthProvider>
     <Router>
       <Switch>
-        <Route path="/login">
+        <AuthRoute path="/login">
           <LoginForm />
-        </Route>
-        <Route path="/signup">
+        </AuthRoute>
+        <AuthRoute path="/signup">
           <Signup />
-        </Route>
+        </AuthRoute>
         <Route path="/404">
           <Page404 />
         </Route>

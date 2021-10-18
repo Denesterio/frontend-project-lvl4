@@ -13,7 +13,7 @@ export const fetchChannels = createAsyncThunk(
 const channelsSlice = createSlice({
   name: 'channels',
   initialState: {
-    loading: true,
+    loadingStatus: 'loading',
     channels: [],
     messages: [],
     currentChannelId: 1,
@@ -40,18 +40,20 @@ const channelsSlice = createSlice({
   },
   extraReducers: {
     [fetchChannels.pending]: (state) => {
-      state.loading = true;
+      state.loadingStatus = 'loading';
     },
     [fetchChannels.fulfilled]: (state, action) => {
       state.channels = action.payload.channels;
       state.messages = action.payload.messages;
       state.currentChannelId = action.payload.currentChannelId;
-      state.loading = false;
+      state.loadingStatus = 'loaded';
     },
     [fetchChannels.rejected]: (state) => {
-      state.loading = false;
-      if (LSHandler.hasToken()) {
-        LSHandler.remove('token');
+      state.loadingStatus = 'failed';
+      const lshandler = new LSHandler();
+      if (lshandler.hasToken()) {
+        lshandler.remove('token');
+        lshandler.remove('user');
       }
     },
   },

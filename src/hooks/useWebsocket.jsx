@@ -13,6 +13,10 @@ const useSocketProvider = () => {
   const useSocketOn = (event, callback) => {
     useEffect(() => {
       socket.on(event, callback);
+      return () => {
+        socket.disconnect();
+        socket.close();
+      };
     }, []);
   };
 
@@ -26,6 +30,7 @@ const useSocketProvider = () => {
 const SocketProvider = ({ children }) => {
   const [, socketOn, emit] = useSocketProvider();
   const dispatch = useDispatch();
+
   socketOn('newChannel', (data) => {
     dispatch(addChannel(data));
     dispatch(changeChannel(data.id));
